@@ -1,0 +1,45 @@
+name: Build agy-cockpit Android APK
+
+# Card-free x86_64 runner. Hermes compiles natively, Gradle + Android SDK download fine.
+# Triggers on push to these branches or manually from the Actions tab.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+
+      - name: Install JS dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build release APK (Hermes-bundled, self-contained, debug-keystore-signed)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --warning-mode all
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agy-cockpit-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error

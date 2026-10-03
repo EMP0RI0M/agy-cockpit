@@ -1,0 +1,11 @@
+node_modules/
+.expo/
+*.log
+.DS_Store
+
+# Keep the committed native project, but never commit machine-local / generated bits.
+android/local.properties
+android/app/build/
+android/.cxx/
+android/.gradle/
+android/build/
